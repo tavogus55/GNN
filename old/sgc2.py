@@ -1,9 +1,8 @@
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
-from torch_geometric.datasets import Planetoid
 from datetime import datetime
-from data_loader import get_data, get_train_mask, get_test_mask
+from old.old import get_data, get_train_mask, get_test_mask
 
 # SGC Model Definition
 class SGC(torch.nn.Module):
@@ -61,7 +60,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 start_time = datetime.now()
 # Training Loop
 model.train()
-for epoch in range(200):
+for epoch in range(100):
     optimizer.zero_grad()
     out = model(data.x, data.edge_index)  # Use precomputed features
     if selected_dataset == 'Cora' or selected_dataset == 'PubMed' or selected_dataset == 'CiteSeer':

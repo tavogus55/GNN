@@ -49,7 +49,7 @@ def clustering_accuracy(pred, true):
     return acc
 
 # Training the GCN model
-for epoch in range(3000):
+for epoch in range(100):
     loss = train()
     if epoch % 10 == 0:
         print(f'Epoch {epoch}, Loss: {loss:.4f}')

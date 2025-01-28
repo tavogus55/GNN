@@ -1,0 +1,14 @@
+{
+  "learning_rate": 0.001,
+  "epochs": 100,
+  "weight_decay": 0.0001,
+  "datasets": ["Cora", "CiteSeer", "PubMed", "LastFMAsia", "FacebookPagePage", "DeezerEurope", "Amazon Photo",
+    "Amazon Computers", "Actor", "Flickr", "Reddit"],
+  "npz_mapping": {
+    "LastFMAsia": "lastfm_asia",
+    "FacebookPagePage": "facebook",
+    "DeezerEurope": "deezer_europe",
+    "Amazon Photo": "amazon_electronics_photo",
+    "Amazon Computers": "amazon_electronics_computers"
+  }
+}
