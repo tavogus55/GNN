@@ -2,6 +2,7 @@ from old.data_loader import get_data
 # from datetime import datetime
 import argparse
 import time
+import  logging
 
 def get_selected_dataset(available_datasets):
     dataset = None
@@ -32,7 +33,7 @@ def get_dataset_data(selected_dataset):
 def set_arg_parser():
     ALLOWED_DATASETS = [
         "Cora",
-        "Citeseer",
+        "CiteSeer",
         "PubMed",
         "Flickr",
         "FacebookPagePage",
@@ -57,7 +58,7 @@ def set_arg_parser():
     )
     parser.add_argument("--model", type=str, required=True, help="GCN or SGC")
     parser.add_argument("--exp", type=int, required=True, help="How many times do you want to run the exercise")
-    # parser.add_argument("--log_path", type=str, help="Where you want to store the logs")
+    parser.add_argument("--log_path", type=str, required=True, help="Where you want to store the logs")
     # parser.add_argument("--tuning", type=int, help="How many times you want to tune the hyperparameters")
     args = parser.parse_args()
 
@@ -65,7 +66,50 @@ def set_arg_parser():
     dataset_decision = args.data
     model = args.model
     exp_times = args.exp
-    # log_path = args.log_path
+    log_path = args.log_path
     # is_tuning = args.tuning
 
-    return cuda_num, dataset_decision, model, exp_times
+    return cuda_num, dataset_decision, model, exp_times, log_path
+
+class CustomFormatter(logging.Formatter):
+
+    blue = "\x1b[34;20m"
+    green = "\x1b[32;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+
+    FORMATS = {
+        logging.DEBUG: green + format + reset,
+        logging.INFO: blue + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+def get_logger(name, log_path):
+
+    logger = logging.getLogger(name)
+    logging.basicConfig(
+        filename=log_path,
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    ch.setFormatter(CustomFormatter())
+
+    logger.addHandler(ch)
+
+    return logger
