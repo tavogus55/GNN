@@ -24,7 +24,7 @@ def get_dataset_data(selected_dataset):
 
         start_time = time.time()
         if 'Amazon' in selected_dataset:
-            dataset, train_mask, test_mask = get_data('./data/', selected_dataset, type=selected_dataset.split()[1])
+            dataset, train_mask, test_mask = get_data('./data/', selected_dataset)
         else:
             dataset, train_mask, test_mask = get_data('./data/', selected_dataset)
 
