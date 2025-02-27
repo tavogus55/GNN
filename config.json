@@ -1,8 +1,8 @@
 {
-  "learning_rate": 0.01,
+  "learning_rate": 0.001,
   "epochs": 100,
   "weight_decay": 0.0005,
-  "hidden_size": 16,
+  "hidden_size": 128,
   "datasets": ["Cora", "CiteSeer", "PubMed", "LastFMAsia", "FacebookPagePage", "DeezerEurope", "Amazon Photo",
     "Amazon Computers", "Actor", "Flickr", "Reddit"],
   "npz_mapping": {

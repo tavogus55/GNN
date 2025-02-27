@@ -5,6 +5,7 @@ from torch_geometric.nn import GCNConv, SGConv
 from utils import *
 import json
 import gc
+from torch.nn import Linear
 import logging
 
 # Define the GCN model
@@ -26,25 +27,27 @@ class GCN(torch.nn.Module):
         x = self.conv2(x, edge_index)
         return F.log_softmax(x, dim=1)
 
-# Define the SGC model
+
 class SGC(torch.nn.Module):
-    def __init__(self, num_features, hidden_size, num_classes):
+    def __init__(self, num_features, hidden_size, num_classes, K=2):
         """
-        Two-layer SGC model:
-        - First layer: size = hidden_size (128 as per paper).
-        - Second layer: size = num_classes (for classification tasks).
+        Standard SGC model:
+        - First SGConv layer: K-step feature propagation.
+        - One non-linearity (ReLU).
+        - Final Linear layer for classification.
         """
         super(SGC, self).__init__()
-        self.conv1 = SGConv(num_features, hidden_size)
-        self.conv2 = SGConv(hidden_size, num_classes)
+        self.conv = SGConv(num_features, hidden_size, K=K, cached=True)  # Feature propagation
+        self.fc = Linear(hidden_size, num_classes)  # Classification layer
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
-        x = self.conv1(x, edge_index)
-        x = self.conv2(x, edge_index)
-        return x
+        x = self.conv(x, edge_index)  # Propagate features
+        x = F.relu(x)  # Single non-linearity
+        x = self.fc(x)  # Final classification
+        return F.log_softmax(x, dim=1)  # Standard output format
 
-# Training function (no mini-batching)
+
 def train(model, data, optimizer, epochs, train_mask, logger=None):
     model.train()
     for epoch in range(epochs):  # Number of epochs
@@ -57,7 +60,7 @@ def train(model, data, optimizer, epochs, train_mask, logger=None):
         if epoch % 10 == 0:
             logger.debug(f"Epoch {epoch}: Loss: {loss.item():.4f}")
 
-# Evaluation function
+
 def test(model, data, test_mask):
     model.eval()
     out = model(data)
@@ -65,6 +68,7 @@ def test(model, data, test_mask):
     correct = pred[test_mask].eq(data.y[test_mask]).sum().item()
     acc = correct / test_mask.sum().item()
     return acc
+
 
 def main(device, dataset_decision, selected_model, exp_times, logger=None):
 
@@ -131,9 +135,9 @@ def main(device, dataset_decision, selected_model, exp_times, logger=None):
     logger.info(f"Experiment count: {exp_times}")
     logger.info(f"Model Type: {selected_model}")
     logger.info(f"Dataset Name: {dataset_decision}")
-    logger.info(f"All Accuracies: {efficiencies}")
+    logger.info(f"All Accuracies: {accuracies}")
     logger.info(f"All Run Times: {run_times}")
-    logger.info(f"All Efficiencies: {accuracies}")
+    logger.info(f"All Efficiencies: {efficiencies}")
     logger.info(f"Average Accuracies: {avg_accuracy:.4f}")
     logger.info(f"Average Run Times: {avg_run_time:.4f} seconds")
     logger.info(f"Average Efficiency: {avg_efficiency:.4f} seconds/epoch")
@@ -157,8 +161,6 @@ if __name__ == "__main__":
 
     with open("./config.json", "r") as file:
         CONFIG = json.load(file)
-
-
 
     device = torch.device(f'cuda:{cuda_num}' if torch.cuda.is_available() else 'cpu')
 
